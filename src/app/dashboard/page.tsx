@@ -44,7 +44,7 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold">
           Welcome, {user.firstName ?? "User"} 👋
         </h1>
-        <UserButton afterSignOutUrl="/sign-in" />
+        <UserButton />
       </div>
 
       {/* Summary Cards */}
