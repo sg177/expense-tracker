@@ -98,3 +98,41 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+export async function PUT(req: Request) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id, type, amount, category, description, date } = body;
+
+    if (!id || !type || !amount || !category) {
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const transaction = await prisma.transaction.update({
+      where: { id, userId: user.id },
+      data: {
+        type,
+        amount,
+        category,
+        description: description || "",
+        date: new Date(date),
+      },
+    });
+
+    return NextResponse.json(transaction);
+  } catch (error) {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
