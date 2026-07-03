@@ -67,3 +67,34 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+export async function DELETE(req: Request) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    await prisma.transaction.delete({
+      where: { id, userId: user.id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}

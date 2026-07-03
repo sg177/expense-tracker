@@ -1,8 +1,10 @@
+import TransactionList from "@/components/transactions/TransactionList";
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import TransactionForm from "@/components/transactions/TransactionForm";
 import ExpenseChart from "@/components/charts/ExpenseChart";
+
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -80,23 +82,7 @@ export default async function DashboardPage() {
         {/* Recent Transactions */}
         <div className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
-          {transactions.length === 0 ? (
-            <p className="text-gray-400 text-sm">No transactions yet. Add one!</p>
-          ) : (
-            <ul className="space-y-3">
-              {transactions.map((t) => (
-                <li key={t.id} className="flex justify-between items-center border-b pb-2">
-                  <div>
-                    <p className="font-medium">{t.category}</p>
-                    <p className="text-sm text-gray-400">{t.description}</p>
-                  </div>
-                  <p className={t.type === "income" ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-                    {t.type === "income" ? "+" : "-"}₹{t.amount.toFixed(2)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
+          <TransactionList transactions = {transactions} />
         </div>
       </div>
     </div>
