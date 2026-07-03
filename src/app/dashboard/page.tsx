@@ -1,10 +1,10 @@
-import TransactionList from "@/components/transactions/TransactionList";
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import TransactionForm from "@/components/transactions/TransactionForm";
+import TransactionList from "@/components/transactions/TransactionList";
 import ExpenseChart from "@/components/charts/ExpenseChart";
-
+import BudgetTracker from "@/components/budget/BudgetTracker";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -29,6 +29,15 @@ export default async function DashboardPage() {
   const transactions = await prisma.transaction.findMany({
     where: { userId: dbUser?.id ?? "" },
     orderBy: { date: "desc" },
+  });
+
+  const now = new Date();
+  const budgets = await prisma.budget.findMany({
+    where: {
+      userId: dbUser?.id ?? "",
+      month: now.getMonth() + 1,
+      year: now.getFullYear(),
+    },
   });
 
   const income = transactions
@@ -82,8 +91,16 @@ export default async function DashboardPage() {
         {/* Recent Transactions */}
         <div className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
-          <TransactionList transactions = {transactions} />
+          <TransactionList transactions={transactions} />
         </div>
+      </div>
+
+      {/* Budget */}
+      <div className="mt-8">
+        <BudgetTracker
+          budgets={budgets}
+          transactions={transactions}
+        />
       </div>
     </div>
   );
