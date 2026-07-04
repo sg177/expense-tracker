@@ -60,6 +60,9 @@ export default async function DashboardPage() {
           <a href="/analytics" className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600">
             📊 Analytics
           </a>
+          <a href="/admin" className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600">
+            🛡️ Admin
+          </a>
           <UserButton />
         </div>
       </div>
