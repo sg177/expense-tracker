@@ -113,8 +113,7 @@ export default async function AdminPage() {
             <tbody>
               {transactions.map((t) => (
                 <tr key={t.id} className="border-b hover:bg-gray-50">
-                  <td className="py-2 text-sm">{t.user.email}</td>
-                  <td className="py-2">
+                <td className="py-2 text-sm">{(t as any).user?.email}</td>                  <td className="py-2">
                     <span className={`text-xs px-2 py-1 rounded-full ${t.type === "income" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
                       {t.type}
                     </span>
