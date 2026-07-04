@@ -149,7 +149,7 @@ export default function TransactionList({ transactions }: Props) {
                 <p className="font-medium">{t.category}</p>
                 <p className="text-sm text-gray-400">{t.description}</p>
                 <p className="text-xs text-gray-300">
-                  {new Date(t.date).toLocaleDateString()}
+                  {new Date(t.date).toISOString().split("T")[0]}
                 </p>
               </div>
               <div className="flex items-center gap-3">

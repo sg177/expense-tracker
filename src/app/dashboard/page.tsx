@@ -5,6 +5,7 @@ import TransactionForm from "@/components/transactions/TransactionForm";
 import TransactionList from "@/components/transactions/TransactionList";
 import ExpenseChart from "@/components/charts/ExpenseChart";
 import BudgetTracker from "@/components/budget/BudgetTracker";
+import AIInsights from "@/components/ai/AIInsights";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -55,7 +56,12 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold">
           Welcome, {user.firstName ?? "User"} 👋
         </h1>
-        <UserButton />
+        <div className="flex items-center gap-4">
+          <a href="/analytics" className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600">
+            📊 Analytics
+          </a>
+          <UserButton />
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -102,6 +108,8 @@ export default async function DashboardPage() {
           transactions={transactions}
         />
       </div>
+      {/* AI Insights */}
+      <AIInsights />
     </div>
   );
 }
