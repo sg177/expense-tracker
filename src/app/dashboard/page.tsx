@@ -11,12 +11,12 @@ export default async function DashboardPage() {
   const user = await currentUser();
   if (!user) return null;
 
-  const dbUser = await prisma.user.findUnique({
+  let dbUser = await prisma.user.findUnique({
     where: { clerkId: user.id },
   });
 
   if (!dbUser) {
-    await prisma.user.create({
+    dbUser = await prisma.user.create({
       data: {
         clerkId: user.id,
         email: user.emailAddresses[0].emailAddress,
@@ -28,14 +28,14 @@ export default async function DashboardPage() {
   }
 
   const transactions = await prisma.transaction.findMany({
-    where: { userId: dbUser?.id ?? "" },
+    where: { userId: dbUser.id },
     orderBy: { date: "desc" },
   });
 
   const now = new Date();
   const budgets = await prisma.budget.findMany({
     where: {
-      userId: dbUser?.id ?? "",
+      userId: dbUser.id,
       month: now.getMonth() + 1,
       year: now.getFullYear(),
     },
@@ -49,70 +49,75 @@ export default async function DashboardPage() {
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
 
+  const balance = income - expenses;
+  // const isAdmin = user.id === process.env.ADMIN_USER_ID;
+
   return (
-    <div className="min-h-screen p-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">
-          Welcome, {user.firstName ?? "User"} 👋
-        </h1>
-        <div className="flex items-center gap-4">
-          <a href="/analytics" className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600">
-            📊 Analytics
-          </a>
-          <a href="/admin" className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600">
-            🛡️ Admin
-          </a>
-          <UserButton />
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
 
-      {/* Summary Cards */}
+      <div className="p-8">
+        {/* Welcome */}
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          Welcome back, {user.firstName ?? "User"} 👋
+        </h2>
+
+        {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-green-100 rounded-xl p-4">
-          <p className="text-sm text-green-600">Total Income</p>
-          <p className="text-2xl font-bold text-green-700">₹{income.toFixed(2)}</p>
+        <div className="bg-white rounded-xl p-5 shadow border-l-4 border-green-500">
+          <p className="text-sm text-gray-500">Total Income</p>
+          <p className="text-3xl font-bold text-gray-800 mt-1">₹{income.toFixed(0)}</p>
+          <p className="text-xs text-green-500 mt-1">↑ All time</p>
         </div>
-        <div className="bg-red-100 rounded-xl p-4">
-          <p className="text-sm text-red-600">Total Expenses</p>
-          <p className="text-2xl font-bold text-red-700">₹{expenses.toFixed(2)}</p>
+        <div className="bg-white rounded-xl p-5 shadow border-l-4 border-red-500">
+          <p className="text-sm text-gray-500">Total Expenses</p>
+          <p className="text-3xl font-bold text-gray-800 mt-1">₹{expenses.toFixed(0)}</p>
+          <p className="text-xs text-red-500 mt-1">↓ All time</p>
         </div>
-        <div className="bg-blue-100 rounded-xl p-4">
-          <p className="text-sm text-blue-600">Balance</p>
-          <p className="text-2xl font-bold text-blue-700">₹{(income - expenses).toFixed(2)}</p>
-        </div>
-      </div>
-
-      {/* Chart */}
-      <div className="bg-white rounded-xl p-6 shadow mb-8">
-        <h2 className="text-lg font-semibold mb-4">Spending by Category</h2>
-        <ExpenseChart transactions={transactions} />
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-2 gap-8">
-        {/* Add Transaction Form */}
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-lg font-semibold mb-4">Add Transaction</h2>
-          <TransactionForm />
-        </div>
-
-        {/* Recent Transactions */}
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
-          <TransactionList transactions={transactions} />
+        <div className={`bg-white rounded-xl p-5 shadow border-l-4 ${balance >= 0 ? "border-blue-500" : "border-orange-500"}`}>
+          <p className="text-sm text-gray-500">Balance</p>
+          <p className="text-3xl font-bold text-gray-800 mt-1">₹{balance.toFixed(0)}</p>
+          <p className={`text-xs mt-1 ${balance >= 0 ? "text-blue-500" : "text-orange-500"}`}>
+            {balance >= 0 ? "↑ Positive" : "↓ Negative"}
+          </p>
         </div>
       </div>
 
-      {/* Budget */}
-      <div className="mt-8">
-        <BudgetTracker
-          budgets={budgets}
-          transactions={transactions}
-        />
+        {/* Chart */}
+        <div className="bg-white rounded-xl p-6 shadow mb-8">
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">Spending by Category</h2>
+          <ExpenseChart transactions={transactions} />
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-2 gap-8 mb-8">
+          <div className="bg-white rounded-xl p-6 shadow">
+            <h2 className="text-lg font-semibold mb-4 text-gray-700">Add Transaction</h2>
+            <TransactionForm />
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow">
+            <h2 className="text-lg font-semibold mb-4 text-gray-700">
+              Recent Transactions
+              <span className="text-sm font-normal text-gray-400 ml-2">
+                ({transactions.length} total)
+              </span>
+            </h2>
+            <TransactionList transactions={transactions} />
+          </div>
+        </div>
+
+        {/* Budget */}
+        <div className="mb-8">
+          <BudgetTracker budgets={budgets} transactions={transactions} />
+        </div>
+
+        {/* AI Insights */}
+        <AIInsights />
       </div>
-      {/* AI Insights */}
-      <AIInsights />
+
+      {/* Footer */}
+      <div className="text-center py-4 text-gray-400 text-sm border-t bg-white mt-8">
+        © 2026 Smart Expense Tracker — Built with Next.js, Prisma & AI
+      </div>
     </div>
   );
 }
